@@ -179,18 +179,29 @@ class IonPermeationAnalysis:
 
 
         print(f"\nTotal forward permeation events: {len(permeation_events)}")
+def save_exit_frames_to_txt(filename="exit_frames.txt"):
+    """Save all exit_frame values in a simple array format to a text file."""
+    with open(filename, 'w') as f:
+        f.write("[")  # Begin array
+        f.write(", ".join(str(event['exit_frame']) for event in permeation_events))
+        f.write("]")  # End array
+    print(f"Exit frames saved to {filename}")
 
 def main():
     """Main function to run the analysis."""
     parser = argparse.ArgumentParser(description="Run ion permeation analysis on a molecular dynamics trajectory.")
     parser.add_argument("--top_file", required=True, help="Path to the topology file (e.g., .prmtop)")
     parser.add_argument("--traj_file", required=True, help="Path to the trajectory file (e.g., .trr or .xtc)")
-    parser.add_argument("--channel", required=True, choices=["GIRK4", "GIRK12","Kir_4.1_5.1"], help="Channel type (GIRK4 or GIRK12)")
+    parser.add_argument("--channel", required=True, choices=["GIRK14_2_2", "GIRK14_1_3", "GIRK4", "GIRK12","Kir_4.1_5.1", "GIRK2"], help="Channel type (GIRK4 or GIRK12)")
 
     args = parser.parse_args()
     
     channel_residues = {
-        "GIRK4": {
+       	"GIRK2": {
+            "upper_gate_residues": [138, 794, 466, 1122],
+            "lower_gate_residues": list(range(260, 266)) + list(range(915, 921)) + list(range(587, 593)) + list(range(1243, 1249))
+        },
+	 "GIRK4": {
             "upper_gate_residues": [138, 788, 463, 1113],
             "lower_gate_residues": list(range(259, 266)) + list(range(909, 916)) + list(range(584, 591)) + list(range(1234, 1241))
         },
@@ -201,8 +212,15 @@ def main():
         "Kir_4.1_5.1": {
             "upper_gate_residues": [1112, 136, 462, 787],
             "lower_gate_residues": list(range(582, 586)) + list(range(260, 265)) + list(range(909, 914)) + list(range(1231, 1236))
+        },
+	"GIRK14_1_3": {
+            "upper_gate_residues": [1114, 139, 464, 789],
+            "lower_gate_residues": list(range(260, 265)) + list(range(589, 590)) + list(range(910, 915)) + list(range(1235, 1240))
+        },
+	 "GIRK14_2_2": {
+            "upper_gate_residues": [1115, 139, 465, 790],
+            "lower_gate_residues": list(range(260, 265)) + list(range(586, 591)) + list(range(911, 916)) + list(range(1236, 1241))
         }
-
 
     }
     
@@ -221,6 +239,7 @@ def main():
         
         analyzer.run_analysis()
         analyzer.print_results()
+        save_exit_frames_to_txt()
         
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -228,4 +247,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
